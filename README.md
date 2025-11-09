@@ -1,64 +1,125 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Order Management Demo (Laravel + Vue)
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a small order management demo app built with **Laravel 8**, **Vue 3**, **Tailwind CSS**, and **Laravel Mix**.
 
-## About Laravel
+It’s not meant to be a full-blown production system – more of a structured example showing:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- A clean **service layer** in Laravel (`OrderService`)
+- API built with **Form Requests** + **API Resources**
+- A Vue frontend that talks to the API via a tiny `api/orders.js` helper
+- A simple UI to browse orders, view details, and update status
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Features
 
-## Learning Laravel
+**Orders, Customers, Products, Order Items**
+  - Orders belong to customers and have line items
+  - Items are linked to products with unit price + line totals
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+**API-first backend**
+  - `/api/orders` returns paginated orders
+  - Orders include customer + item + product data
+  - Status updates via `/api/orders/{id}/status` (`pending`, `paid`, `shipped`, `cancelled`)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Vue + Tailwind UI**
+  - Order list with basic styling
+  - Click a row to open a **modal** with full order details
+  - Buttons to update the order status in-place
+  - Pagination controls (Previous / Next)
 
-## Laravel Sponsors
+**Seed data for demo**
+  - Factories for customers, products, and orders
+  - `php artisan db:seed` gives you a nice dataset to play with
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+---
 
-### Premium Partners
+## Tech Stack
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+- **Backend**
+  - PHP 8.x
+  - Laravel 8.x
+  - Eloquent models + migrations + seeders
+  - Service layer (`app/Services/OrderService.php`)
+  - Form Requests (`StoreOrderRequest`, `UpdateOrderStatusRequest`)
+  - API Resources (`OrderResource`, `OrderItemResource`, etc.)
 
-## Contributing
+- **Frontend**
+  - Vue 3 (single-file components)
+  - Tailwind CSS
+  - Laravel Mix
+  - Custom `resources/js/api/orders.js` for API calls
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+### Running
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+composer install
 
-## Security Vulnerabilities
+npm install
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Copy the example env file and update your settings:
 
-## License
+php artisan migrate
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+php artisan db:seed
+
+php artisan serve
+
+npm run dev
+
+- **Frontend + API consumer:** `http://127.0.0.1:8000/`
+- **Raw API (paginated orders):** `http://127.0.0.1:8000/api/orders`
+
+
+## How It’s Structured
+
+### Backend
+
+- `app/Models`  
+  - `Order`, `OrderItem`, `Customer`, `Product`
+
+- `app/Services/OrderService.php`  
+  - `listOrders()` – returns paginated orders with relations  
+  - `getOrder($id)` – single order with relations  
+  - `createOrder(array $data)` – create order & items, update total  
+  - `updateStatus($id, $status)` – update order status  
+  - `deleteOrder($id)` – delete an order (and cascading items)
+
+- `app/Http/Requests`  
+  - `StoreOrderRequest` – validation for creating orders  
+  - `UpdateOrderStatusRequest` – validation for status updates
+
+- `app/Http/Resources`  
+  - `OrderResource` – shapes the order JSON (customer + items + products)  
+  - `OrderItemResource`, `CustomerResource`, `ProductResource`
+
+- `routes/api.php`  
+  - `GET /api/orders`  
+  - `GET /api/orders/{id}`  
+  - `POST /api/orders`  
+  - `POST /api/orders/{id}/status`  
+  - `DELETE /api/orders/{id}`
+
+### Frontend
+
+- `resources/js/app.js`  
+  - Bootstraps Vue and mounts the main component
+
+- `resources/js/components/OrdersList.vue`  
+  - Fetches paginated orders
+  - Shows table + pagination
+  - Controls the order details modal and status updates
+
+- `resources/js/components/OrderDetailsCard.vue`  
+  - Renders a modal with full order details + status buttons
+
+- `resources/js/api/orders.js`  
+  - `fetchOrders(page)` – wraps `/api/orders?page=...`  
+  - `updateOrderStatus(id, status)` – POSTs to `/api/orders/{id}/status`
+
+- `resources/css/app.css`  
+  - Tailwind entrypoint
+
+---
